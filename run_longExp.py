@@ -7,10 +7,10 @@ import numpy as np
 import torch.multiprocessing as mp
 from torch.multiprocessing import freeze_support
 
-fix_seed = 2021
-random.seed(fix_seed)
-torch.manual_seed(fix_seed)
-np.random.seed(fix_seed)
+# fix_seed = 2021
+# random.seed(fix_seed)
+# torch.manual_seed(fix_seed)
+# np.random.seed(fix_seed)
 
 parser = argparse.ArgumentParser(description='Autoformer & Transformer family for Time Series Forecasting')
 
@@ -80,7 +80,15 @@ parser.add_argument('--use_multi_gpu', action='store_true', help='use multiple g
 parser.add_argument('--devices', type=str, default='0,1,2,3', help='device ids of multile gpus')
 parser.add_argument('--test_flop', action='store_true', default=False, help='See utils/tools for usage')
 
+parser.add_argument('--save_npy', type=int, default=0, help='whether to save numpy arrays (0: no, 1: yes)')
+parser.add_argument('--seed', type=int, default=2021, help='random seed')
+
 args = parser.parse_args()
+
+fix_seed = args.seed
+random.seed(fix_seed)
+torch.manual_seed(fix_seed)
+np.random.seed(fix_seed)
 
 args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
 
@@ -125,7 +133,7 @@ if args.is_training:
         exp.train(setting, model_name)
 
         print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
-        exp.test(setting, model_name)
+        exp.test(setting, model_name, test=0, save_npy=args.save_npy)
 
         if args.do_predict:
             print('>>>>>>>predicting : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))

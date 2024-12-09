@@ -1,0 +1,13 @@
+checkpoints
+results
+**/__pycache__/
+*.mp4
+.DS_Store
+**/checkpoints/
+dataset
+*.png
+plots
+*.db
+Icon
+.csv
+# *.sh

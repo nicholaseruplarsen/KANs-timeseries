@@ -12,6 +12,7 @@ from models import DLinear
 from utils.tools import EarlyStopping, adjust_learning_rate
 from utils.metrics import metric, SE
 from models.Stat_models import Naive_repeat
+from utils.metrics_printer import MetricsPrinter
 
 warnings.filterwarnings('ignore')
 
@@ -21,7 +22,7 @@ class Exp_Main(Exp_Basic):
 
     def _build_model(self):
         model_dict = {
-            'DLinear': DLinear,
+            'DLinear': DLinear
         }
         model = model_dict[self.args.model].Model(self.args).float()
         print(f"\n{model}\n")
@@ -32,34 +33,34 @@ class Exp_Main(Exp_Basic):
         return data_set, data_loader
 
     def _select_optimizer(self):
-        return optim.Adam(self.model.parameters(), lr=self.args.learning_rate)
+        # Check if model has any parameters to optimize
+        if list(self.model.parameters()):
+            return optim.Adam(self.model.parameters(), lr=self.args.learning_rate)
+        return None
 
     def _select_criterion(self):
+        if self.args.model == 'TernaryTrader':
+            return self.model.trading_loss
         return nn.MSELoss()
 
+    # Modify vali function to handle ternary signals:
     def vali(self, vali_data, vali_loader, criterion):
         total_loss = []
         self.model.eval()
         with torch.no_grad():
             for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(vali_loader):
                 batch_x = batch_x.float().to(self.device)
-                batch_y = batch_y.float()
-
-                batch_x_mark = batch_x_mark.float().to(self.device)
-                batch_y_mark = batch_y_mark.float().to(self.device)
+                batch_y = batch_y.float().to(self.device)
 
                 outputs = self.model(batch_x)
 
                 f_dim = -1 if self.args.features == 'MS' else 0
                 outputs = outputs[:, -self.args.pred_len:, f_dim:]
-                batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
+                batch_y = batch_y[:, -self.args.pred_len:, f_dim:]
 
-                pred = outputs.detach().cpu()
-                true = batch_y.detach().cpu()
+                loss = criterion(outputs, batch_y)
+                total_loss.append(loss.item())
 
-                loss = criterion(pred, true)
-
-                total_loss.append(loss)
         total_loss = np.average(total_loss)
         self.model.train()
         return total_loss
@@ -68,6 +69,36 @@ class Exp_Main(Exp_Basic):
         train_data, train_loader = self._get_data(flag='train')
         vali_data, vali_loader = self._get_data(flag='val')
         test_data, test_loader = self._get_data(flag='test')
+
+        # global train_data_size
+        # global vali_data_size
+        # global test_data_size
+
+        # train_data_size = len(train_data)
+        # vali_data_size = len(vali_data)
+        # test_data_size = len(test_data)
+
+        global exp_data
+        exp_data = {
+            'model': self.args.model,
+            'dataset': self.args.data_path,
+            'seq_len': self.args.seq_len,
+            'pred_len': self.args.pred_len,
+            'features': self.args.features,
+            'channels': self.args.enc_in,
+            'train_epochs': self.args.train_epochs,
+            'batch_size': self.args.batch_size,
+            'learning_rate': self.args.learning_rate,
+            'train_start_date': train_data.dates[0].strftime('%Y-%m-%d'),
+            'train_end_date': train_data.dates[-1].strftime('%Y-%m-%d'),
+            'vali_start_date': vali_data.dates[0].strftime('%Y-%m-%d'),
+            'vali_end_date': vali_data.dates[-1].strftime('%Y-%m-%d'),
+            'test_start_date': test_data.dates[0].strftime('%Y-%m-%d'),
+            'test_end_date': test_data.dates[-1].strftime('%Y-%m-%d'),
+            'train_steps': len(train_data),
+            'vali_steps': len(vali_data),
+            'test_steps': len(test_data)
+        }
 
         path = os.path.join(self.args.checkpoints, setting)
         if not os.path.exists(path):
@@ -80,6 +111,11 @@ class Exp_Main(Exp_Basic):
 
         model_optim = self._select_optimizer()
         criterion = self._select_criterion()
+
+        # If model has no parameters to optimize, skip training
+        if model_optim is None:
+            print("Model has no trainable parameters. Skipping training.")
+            return self.model
 
         for epoch in range(self.args.train_epochs):
             iter_count = 0
@@ -97,7 +133,8 @@ class Exp_Main(Exp_Basic):
 
                 f_dim = -1 if self.args.features == 'MS' else 0
                 outputs = outputs[:, -self.args.pred_len:, f_dim:]
-                batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
+                batch_y = batch_y[:, -self.args.pred_len:, f_dim:]
+
                 loss = criterion(outputs, batch_y)
                 train_loss.append(loss.item())
 
@@ -131,7 +168,7 @@ class Exp_Main(Exp_Basic):
 
         return self.model
 
-    def test(self, setting, model_name, test=0):
+    def test(self, setting, model_name, test=0, save_npy=False):
         test_data, test_loader = self._get_data(flag='test')
         naive_model = Naive_repeat(self.args).to(self.device)
             
@@ -161,9 +198,10 @@ class Exp_Main(Exp_Basic):
 
                 f_dim = -1 if self.args.features == 'MS' else 0
                 outputs = outputs[:, -self.args.pred_len:, f_dim:]
-                naive_output = naive_output[:, -self.args.pred_len:, f_dim:]
                 batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
 
+                naive_output = naive_output[:, -self.args.pred_len:, f_dim:]
+                
                 input = batch_x.detach().cpu().numpy()
                 pred = outputs.detach().cpu().numpy()
                 naive_pred = naive_output.detach().cpu().numpy()
@@ -179,7 +217,6 @@ class Exp_Main(Exp_Basic):
         naive_preds = np.concatenate(naive_preds, axis=0)
         trues = np.concatenate(trues, axis=0)
 
-        # Add this condition to handle MS case
         if self.args.features == 'MS':
             # For MS: select only the target variable from inputs before concatenating
             target_inputs = inputs[:, :, -1:]  # Assuming target is the last variable
@@ -211,44 +248,28 @@ class Exp_Main(Exp_Basic):
                 'relative_rmse_torch': relative_rmse_torch, 'relative_mae_torch': relative_mae_torch
             }
 
-        def log_metrics(results, filename='final_metrics.txt'):
-            print("\nFinal Metrics:\n")
-            
-            for model_name, metrics in results.items():
-                print(f"{model_name:<12} MSE: {metrics['mse']:<10.6f} MAE: {metrics['mae']:<10.6f} SE: {metrics['se']:<10.6f} "
-                    f"RRMSE: {metrics['relative_rmse']:<10.6f} RMAE: {metrics['relative_mae']:<10.6f} (numpy)")
-                print(f"{model_name:<12} MSE: {metrics['mse_torch']:<10.6f} MAE: {metrics['mae_torch']:<10.6f} SE: {metrics['se_torch']:<10.6f} "
-                    f"RRMSE: {metrics['relative_rmse_torch']:<10.6f} RMAE: {metrics['relative_mae_torch']:<10.6f} (torch)")
-                print()
-
-            with open(filename, 'w') as f:
-                f.write("\nFinal Metrics:\n")
-                for model_name, metrics in results.items():
-                    f.write(f"{model_name:<12} MSE: {metrics['mse']:<10.3f} MAE: {metrics['mae']:<10.3f} SE: {metrics['se']:<10.3f} "
-                            f"RRMSE: {metrics['relative_rmse_torch']:<10.2%} | RRMSE: {metrics['relative_rmse']:<10.3f} RMAE: {metrics['relative_mae']:<10.3f} (numpy)\n")
-                    f.write(f"{model_name:<12} MSE: {metrics['mse_torch']:<10.3f} MAE: {metrics['mae_torch']:<10.3f} SE: {metrics['se_torch']:<10.3f} "
-                            f"RRMSE: {metrics['relative_rmse_torch']:<10.2%} | RRMSE: {metrics['relative_rmse_torch']:<10.3f} RMAE: {metrics['relative_mae_torch']:<10.3f} (torch)\n")
-                    f.write("\n")
-
+        # Calculate prediction metrics
         results = {
             self.args.model: compute_metrics(preds, trues),
             'Repeat': compute_metrics(naive_preds, trues)
         }
-
-        log_metrics(results)
-
-        # Verified by assert_equal_true.py that the files are identical
-        # np.save(os.path.join(folder_path, f'{model_name}_true.npy'), trues)
-        # np.save(os.path.join(folder_path, f'{model_name}_naive_pred.npy'), naive_preds)
-
         model_name = self.args.model
-        np.save(os.path.join(folder_path, f'{model_name}_pred.npy'), preds)
-        np.save(os.path.join(folder_path, f'true.npy'), trues)
-        np.save(os.path.join(folder_path, f'naive_pred.npy'), naive_preds)
-        np.save(os.path.join(folder_path, f'{model_name}_metrics.npy'), results)
-        np.save(os.path.join(folder_path, f'gt.npy'), gt)  # Save the full ground truth
-        
+
+        if save_npy:
+            np.save(os.path.join(folder_path, f'{model_name}_pred.npy'), preds)
+            np.save(os.path.join(folder_path, f'true.npy'), trues)
+            np.save(os.path.join(folder_path, f'naive_pred.npy'), naive_preds)
+            np.save(os.path.join(folder_path, f'{model_name}_metrics.npy'), results)
+            np.save(os.path.join(folder_path, f'gt.npy'), gt)
+
+
+        # Print and write metrics using the MetricsPrinter
+        metrics_printer = MetricsPrinter()
+        metrics_printer.print_metrics(prediction_metrics=results)
+        metrics_printer.write_metrics(os.path.join(".", 'final_metrics.txt'), prediction_metrics=results)
+
         print(f"Shapes: pred {preds.shape}, true {trues.shape}, naive_pred {naive_preds.shape}, gt {gt.shape}, metrics {results}")
+
         return
 
     def predict(self, setting, load=False):
