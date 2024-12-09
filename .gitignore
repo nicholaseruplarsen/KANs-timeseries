@@ -10,4 +10,5 @@ plots
 *.db
 Icon
 .csv
+pykan/**
 # *.sh

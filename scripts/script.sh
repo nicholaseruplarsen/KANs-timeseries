@@ -3,7 +3,7 @@
 # Default values for parameters
 seq_len=336
 seeds=(421)
-models=('DLinear')
+models=('KAN')
 pred_lens=(18)
 datasets=("MRO")
 features_list=("S")
