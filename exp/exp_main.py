@@ -261,6 +261,14 @@ class Exp_Main(Exp_Basic):
         }
         model_name = self.args.model
 
+        # Apply inverse transform
+        original_shape = preds.shape
+        preds = test_data.inverse_transform(preds.reshape(-1, preds.shape[-1])).reshape(original_shape)
+        naive_preds = test_data.inverse_transform(naive_preds.reshape(-1, naive_preds.shape[-1])).reshape(original_shape)
+        trues = test_data.inverse_transform(trues.reshape(-1, trues.shape[-1])).reshape(original_shape)
+        inputs = test_data.inverse_transform(inputs.reshape(-1, inputs.shape[-1])).reshape(inputs.shape)
+        gt = test_data.inverse_transform(gt.reshape(-1, gt.shape[-1])).reshape(gt.shape)
+
         if save_npy:
             np.save(os.path.join(folder_path, f'{model_name}_pred.npy'), preds)
             np.save(os.path.join(folder_path, f'true.npy'), trues)

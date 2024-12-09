@@ -107,13 +107,13 @@ def create_forecast_video(dataset, seq_len, pred_len, specified_model, dim_to_pl
     print(f"Video saved to {video_path} with duration {video_duration} seconds at {fps:.2f} fps")
 
 if __name__ == "__main__":
-    dataset = 'MROh'
+    dataset = 'MRO'
     seq_len = 336
-    pred_len = 40
-    specified_model = 'DLinear'
-    model_list = ['DLinear']
+    pred_len = 18
+    specified_model = 'KAN'
+    model_list = ['DLinear', 'KAN']
     
-    root_folder = f'results/{dataset}_{seq_len}_{pred_len}_S_channels_6_seed_2021'
+    root_folder = f'results/{dataset}_{seq_len}_{pred_len}_S_channels_6_seed_421'
 
     dim_to_plot = 1
     sample_interval = 5

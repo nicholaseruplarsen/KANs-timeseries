@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Default values for parameters
-seq_len=336
+seq_len=720
 seeds=(421)
-models=('KAN')
-pred_lens=(18)
+models=('KAN' 'DLinear')
+pred_lens=(120)
 datasets=("MRO")
 features_list=("S")
 

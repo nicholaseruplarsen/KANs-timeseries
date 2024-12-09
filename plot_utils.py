@@ -289,15 +289,15 @@ def plot_single_frame(dataset, seq_len, pred_len, specified_model, sample_index,
     plt.close(fig)
 
 if __name__ == "__main__":
-    dataset = 'GD'
-    seq_len = 336
-    pred_len = 192
+    dataset = 'MRO'
+    seq_len = 720
+    pred_len = 120
     specified_model = 'DLinear'
-    dim_to_plot = 1                 # 1-based indexing
-    sample_index = 1001             # 1-based indexing
-    root_folder = f'results/old/{dataset}_{seq_len}_{pred_len}_S_channels_6'
-    model_list = ['' '']
+    dim_to_plot = 1
+    sample_index = 0
+    root_folder = f'results/{dataset}_{seq_len}_{pred_len}_S_channels_6_seed_421'
+    model_list = ['DLinear', 'KAN']
     
     # Example 2: Ensemble with specific models only
-    ensemble_models = ['' '']
-    plot_single_frame(dataset, seq_len, pred_len, specified_model, sample_index, dim_to_plot, root_folder, model_list, create_ensemble=True, ensemble_models=ensemble_models)
+    ensemble_models = ['DLinear', 'KAN']
+    plot_single_frame(dataset, seq_len, pred_len, specified_model, sample_index, dim_to_plot, root_folder, model_list, create_ensemble=False, ensemble_models=ensemble_models)
