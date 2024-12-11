@@ -1,4 +1,4 @@
-# DLinear
+# KANS-timeseries
 
 Change `num_workers` from `10` to `0` for the repo to work out of the box.
 ```python
