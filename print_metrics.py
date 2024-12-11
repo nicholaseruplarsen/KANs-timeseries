@@ -2,11 +2,15 @@ import os
 import glob
 
 def print_final_metrics():
-    if os.path.exists('final_metrics.txt'):
-        with open('final_metrics.txt', 'r') as f:
+    # Look for metrics files in temp_metrics directory
+    metrics_files = sorted(glob.glob('temp_metrics/metrics_*.txt'))
+    
+    if metrics_files:
+        # Just print the most recent metrics file
+        latest_file = metrics_files[-1]
+        with open(latest_file, 'r') as f:
             print(f.read())
-        os.remove('final_metrics.txt')  # Optional: remove the temporary file
     else:
-        print("\nNo final metrics found.")
+        print("\nNo metrics files found.")
 
 print_final_metrics()
