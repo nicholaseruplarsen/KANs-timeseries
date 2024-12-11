@@ -4,7 +4,6 @@ results
 **.pyc
 *.mp4
 .DS_Store
-**/checkpoints/
 dataset
 *.png
 plots
@@ -12,4 +11,6 @@ plots
 Icon
 .csv
 pykan/**
-# *.sh
+**/model
+efficient-kan
+*.sh

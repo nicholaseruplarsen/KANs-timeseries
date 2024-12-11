@@ -137,7 +137,7 @@ if args.is_training:
 
         if args.do_predict:
             print('>>>>>>>predicting : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
-            exp.predict(setting, True)
+            exp.predict(setting, model_name, True)
 
         torch.cuda.empty_cache()
 else:

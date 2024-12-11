@@ -108,15 +108,15 @@ def create_forecast_video(dataset, seq_len, pred_len, specified_model, dim_to_pl
 
 if __name__ == "__main__":
     dataset = 'MRO'
-    seq_len = 336
-    pred_len = 18
+    seq_len = 720
+    pred_len = 120
     specified_model = 'KAN'
     model_list = ['DLinear', 'KAN']
     
     root_folder = f'results/{dataset}_{seq_len}_{pred_len}_S_channels_6_seed_421'
 
     dim_to_plot = 1
-    sample_interval = 5
-    video_duration = 10
+    sample_interval = 1
+    video_duration = 30
     
     create_forecast_video(dataset, seq_len, pred_len, specified_model, dim_to_plot, sample_interval, root_folder, model_list, video_duration, create_ensemble=False)

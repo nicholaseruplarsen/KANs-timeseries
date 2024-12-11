@@ -294,7 +294,7 @@ if __name__ == "__main__":
     pred_len = 120
     specified_model = 'DLinear'
     dim_to_plot = 1
-    sample_index = 0
+    sample_index = 1453
     root_folder = f'results/{dataset}_{seq_len}_{pred_len}_S_channels_6_seed_421'
     model_list = ['DLinear', 'KAN']
     

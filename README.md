@@ -6,3 +6,8 @@ parser.add_argument('--num_workers', type=int, default=0, help='data loader num 
 ```
 
 Download the most commonly used time series datasets for benchmarking from https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy or https://github.com/thorhojhus/ssl_fts/tree/main/data.
+
+```zsh
+pip install git+https://github.com/KindXiaoming/pykan.git
+git clone https://github.com/Blealtan/efficient-kan
+```

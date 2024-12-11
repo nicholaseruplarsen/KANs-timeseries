@@ -162,14 +162,14 @@ class Exp_Main(Exp_Basic):
 
             print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
                 epoch + 1, train_steps, train_loss, vali_loss, test_loss))
-            early_stopping(vali_loss, self.model, path)
+            early_stopping(vali_loss, self.model, path, model_name)
             if early_stopping.early_stop:
                 print("Early stopping")
                 break
 
             adjust_learning_rate(model_optim, epoch + 1, self.args)
 
-        best_model_path = path + '/' + 'checkpoint.pth'
+        best_model_path = path + '/' + f'{model_name}.pth'
         self.model.load_state_dict(torch.load(best_model_path))
 
         return self.model
@@ -177,10 +177,12 @@ class Exp_Main(Exp_Basic):
     def test(self, setting, model_name, test=0, save_npy=False):
         test_data, test_loader = self._get_data(flag='test')
         naive_model = Naive_repeat(self.args).to(self.device)
+
+        print(f"\nInitial test data size: {len(test_data)}")
             
         if test:
             print('loading model')
-            self.model.load_state_dict(torch.load(os.path.join('./checkpoints/' + setting, 'checkpoint.pth')))
+            self.model.load_state_dict(torch.load(os.path.join('./checkpoints/' + setting, f'{model_name}.pth')))
 
         folder_path = f'./results/{setting}/'
         if not os.path.exists(folder_path):
@@ -286,12 +288,12 @@ class Exp_Main(Exp_Basic):
 
         return
 
-    def predict(self, setting, load=False):
+    def predict(self, setting, model_name, load=False):
         pred_data, pred_loader = self._get_data(flag='pred')
 
         if load:
             path = os.path.join(self.args.checkpoints, setting)
-            best_model_path = path + '/' + 'checkpoint.pth'
+            best_model_path = path + '/' + f'{model_name}.pth'
             self.model.load_state_dict(torch.load(best_model_path))
 
         preds = []

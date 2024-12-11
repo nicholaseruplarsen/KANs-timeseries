@@ -22,7 +22,7 @@ def data_provider(args, flag):
 
     if flag == 'test':
         shuffle_flag = False
-        drop_last = True
+        drop_last = False
         batch_size = args.batch_size
         freq = args.freq
     elif flag == 'pred':
@@ -112,8 +112,8 @@ def data_provider(args, flag):
             msg = f"{info['prefix']}:  {samples_str:<13}, {years_str:<11}, {dates_str}\n"
 
         # Write to both console and log file
-        with open('/dev/tty', 'w') as console:
-            console.write(msg)
+        # with open('/dev/tty', 'w') as console:
+        #     console.write(msg)
         print(msg, end='')  # Log file output only
 
         # Mark test as printed if this was the test flag
