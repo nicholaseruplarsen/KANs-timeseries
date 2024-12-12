@@ -43,9 +43,9 @@ class MetricsPrinter:
                     
                     output.extend([
                         f"{model_name:<20} "
-                        f"MSE: {np.mean(mse_values):<10.5f}±{np.std(mse_values):<10.5f} "
-                        f"MAE: {np.mean(mae_values):<10.5f}±{np.std(mae_values):<10.5f} "
-                        f"SE: {np.mean(se_values):<10.5f}±{np.std(se_values):<10.5f} "
+                        f"MSE: {np.mean(mse_values):<8.5f}±{np.std(mse_values):<8.3f} "
+                        f"MAE: {np.mean(mae_values):<8.5f}±{np.std(mae_values):<8.3f} "
+                        f"SE: {np.mean(se_values):<8.5f}±{np.std(se_values):<8.3f} "
                         f"RRMSE: {np.mean(rrmse_values):.2%}±{np.std(rrmse_values):.2%} "
                         f"RMAE: {np.mean(rmae_values):.2%}±{np.std(rmae_values):.2%}"
                     ])

@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Default values for parameters
-seq_len=720
+seq_len=252
 seeds=(0 42 420 1337 2024)
-models=('DLinear')
+models=('KAN')
 pred_lens=(120)
 datasets=("MRO")
 features_list=("S")
@@ -38,6 +38,7 @@ for dataset in "${datasets[@]}"; do
                 
                 # Loop through each seed value
                 for seed in "${seeds[@]}"; do
+                    export CURRENT_SEED=$seed
                     # Clean up old metrics files
                     rm -f "./temp_metrics/metrics_${seed}.txt"
                     

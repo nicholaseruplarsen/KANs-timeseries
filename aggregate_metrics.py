@@ -1,12 +1,12 @@
 import sys
-import json
-import numpy as np
 from utils.metrics_printer import MetricsPrinter
+import os
 
 def parse_metrics_file(file_path):
     """Parse a metrics file and extract the values."""
     metrics = {}
-    with open(file_path, 'r') as f:
+    full_path = os.path.join("./temp_metrics", file_path)  # Create full path
+    with open(full_path, 'r') as f:
         content = f.read()
         # Parse the metrics using string manipulation
         for line in content.split('\n'):
@@ -29,7 +29,8 @@ def main():
     
     # Collect metrics from all runs
     for metrics_file in metrics_files:
-        run_metrics = parse_metrics_file(f"./temp_metrics/{metrics_file}")
+        # Remove the extra ./temp_metrics/ prefix since parse_metrics_file already adds it
+        run_metrics = parse_metrics_file(metrics_file)
         for model_name, metrics in run_metrics.items():
             if model_name not in all_runs_metrics:
                 all_runs_metrics[model_name] = []
